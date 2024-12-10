@@ -1,6 +1,5 @@
 "use client";
 
-// components/MainPage.tsx
 import React, { useState } from "react";
 import useFetchProducts from "@/hooks/useFetchProducts";
 import useFilterProducts from "@/hooks/useFilterProducts";
@@ -11,10 +10,18 @@ import ItemList from "@/components/Home/ItemList/ItemList";
 import Card from "@/components/Home/Card/Card";
 import styles from "./page.module.css";
 
+const LoadingSpinner: React.FC = () => (
+  <div className="flex flex-col items-center justify-center h-64">
+    <div className="w-12 h-12 border-4 border-t-blue-500 border-gray-200 rounded-full animate-spin"></div>
+    <p className="mt-4 text-gray-500 text-sm">Cargando productos...</p>
+  </div>
+);
+
 const MainPage: React.FC = () => {
   const [productCategoryId, setProductCategoryId] = useState(0);
   const products = useFetchProducts();
   const filteredProducts = useFilterProducts(products, productCategoryId);
+  const isLoading = products.length === 0;
 
   const handleProductCategoryId = (id: number) => {
     setProductCategoryId(id);
@@ -24,20 +31,27 @@ const MainPage: React.FC = () => {
     <>
       <Banner />
       <main className={styles.main}>
-        <h2 className={styles.desktopTitle}>
-          {productCategoryId === 0 ? "Todo" : categories[productCategoryId - 1].name}
-        </h2>
-        <div className={styles.mainContent}>
-          <FilterBar
-            handleProductCategoryId={handleProductCategoryId}
-            productCategoryId={productCategoryId}
-          />
+        {!isLoading ? (
+          <>
+            <h2 className={styles.desktopTitle}>
+              {productCategoryId === 0 ? "Todo" : categories[productCategoryId - 1].name}
+            </h2>
+            <div className={styles.mainContent}>
+              <FilterBar
+                handleProductCategoryId={handleProductCategoryId}
+                productCategoryId={productCategoryId}
+              />
 
-          <div className={styles.cardsContainer}>
-            <h2 className={styles.mobileTitle}>Productos</h2>
-            <ItemList items={filteredProducts} renderCallback={(item) => <Card {...item} />} />
+              <div className={styles.cardsContainer}>
+                <ItemList items={filteredProducts} renderCallback={(item) => <Card {...item} />} />
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center justify-center">
+            <LoadingSpinner />
           </div>
-        </div>
+        )}
       </main>
     </>
   );
